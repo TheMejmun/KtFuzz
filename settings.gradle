@@ -12,3 +12,4 @@ plugins {
 
 rootProject.name = 'KtFuzz'
 include('lib')
+include('test')
