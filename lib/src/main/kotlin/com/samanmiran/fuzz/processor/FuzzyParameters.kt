@@ -7,11 +7,19 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSTypeReference
 import com.squareup.kotlinpoet.BOOLEAN
+import com.squareup.kotlinpoet.BYTE
+import com.squareup.kotlinpoet.CHAR
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.DOUBLE
+import com.squareup.kotlinpoet.FLOAT
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.LONG
 import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.SHORT
+import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.ksp.toClassName
@@ -39,6 +47,14 @@ fun getFuzzyDefault(type: KSTypeReference): CodeBlock {
     } else {
         when(classDeclaration.toClassName()){
             BOOLEAN -> return CodeBlock.of("Random.boolean()")
+            BYTE -> return CodeBlock.of("Random.byte()")
+            SHORT -> return CodeBlock.of("Random.short()")
+            INT -> return CodeBlock.of("Random.int()")
+            LONG -> return CodeBlock.of("Random.long()")
+            CHAR -> return CodeBlock.of("Random.char()")
+            FLOAT -> return CodeBlock.of("Random.float()")
+            DOUBLE -> return CodeBlock.of("Random.double()")
+            STRING -> return CodeBlock.of("Random.string()")
         }
     }
 

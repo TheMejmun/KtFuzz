@@ -13,18 +13,26 @@ data class TestClassB(
     val testClass: TestClassA
 )
 
-//@Fuzzy
-//data class TestClassC(
-//    val i: Int
-//)
+@Fuzzy
+data class TestClassC(
+    val boolean: Boolean,
+    val byte: Byte,
+    val short: Short,
+    val int: Int,
+    val long: Long,
+    val char: Char,
+    val float: Float,
+    val double: Double,
+    val string: String,
+)
 
 fun main() {
     val testClass1 = TestClassA(true, false)
     val testClass2 = fuzzyTestClassA(false)
     val testClass3 = fuzzyTestClassA()
-    val testClassB = fuzzyTestClassB()
     println(testClass1)
     println(testClass2)
     println(testClass3)
-    println(testClassB)
+    println(fuzzyTestClassB())
+    println(fuzzyTestClassC())
 }
