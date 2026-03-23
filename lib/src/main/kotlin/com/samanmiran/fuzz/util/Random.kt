@@ -4,21 +4,23 @@ import kotlin.random.Random
 import kotlin.random.nextUInt
 import kotlin.random.nextULong
 
-fun randBoolean(): Boolean = Random.nextBoolean()
+object Random {
+    fun boolean(): Boolean = Random.nextBoolean()
 
-fun randByte(): Byte = Random.nextInt().toByte()
-fun randShort(): Short = Random.nextInt().toShort()
-fun randInt(): Int = Random.nextInt()
-fun randLong(): Long = Random.nextLong()
+    fun byte(): Byte = Random.nextInt().toByte()
+    fun short(): Short = Random.nextInt().toShort()
+    fun int(): Int = Random.nextInt()
+    fun long(): Long = Random.nextLong()
 
-fun randUByte(): UByte = Random.nextUInt().toUByte()
-fun randUShort(): UShort = Random.nextUInt().toUShort()
-fun randUInt(): UInt = Random.nextUInt()
-fun randULong(): ULong = Random.nextULong()
+    fun uByte(): UByte = Random.nextUInt().toUByte()
+    fun uShort(): UShort = Random.nextUInt().toUShort()
+    fun uInt(): UInt = Random.nextUInt()
+    fun uLong(): ULong = Random.nextULong()
 
-fun randFloat(): Float = Random.nextFloat()
-fun randDouble(): Double = Random.nextDouble()
+    fun float(): Float = Random.nextFloat()
+    fun double(): Double = Random.nextDouble()
 
-private val chars: CharArray = "abcdefghijklmnopqrstuvwxyz0123456789".toCharArray()
-fun randChar(): Char = chars.random()
-fun randString():String = Random.nextBytes(8).toHexString()
+    private val chars: CharArray = "abcdefghijklmnopqrstuvwxyz0123456789".toCharArray()
+    fun char(): Char = chars.random()
+    fun string(): String = Random.nextBytes(8).toHexString()
+}

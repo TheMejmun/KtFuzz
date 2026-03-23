@@ -38,16 +38,20 @@ class FuzzyProcessor(
 
         assert(classDecl.primaryConstructor != null) { "${classDecl.simpleName.asString()} must have a primary constructor" }
         val args = classDecl.primaryConstructor!!.parameters
-            .map { Pair(it.name!!.getShortName(), it.type.toTypeName()) }
-        println("Generating factory for ${classDecl.simpleName.asString()} with args: $args")
 
-        val parameterSpecs = args.map { (name, type) ->
-            ParameterSpec.builder(name, type)
-                .defaultValue(null)
+        println("Generating factory for ${classDecl.simpleName.asString()} with args: ${
+            args.map { Pair(it.name!!.getShortName(), it.type.toTypeName()) }
+        }")
+
+        val defaults = args.associate { it.name to getFuzzyDefault(it.type) }
+
+        val parameterSpecs = args.map {
+            ParameterSpec.builder(it.name!!.getShortName(), it.type.toTypeName())
+                .defaultValue(defaults[it.name])
                 .build()
         }
 
-        val returnString = "return %T(${args.map { it.first }.joinToString(", ")})"
+        val returnString = "return %T(${args.joinToString(", ") { it.name!!.getShortName() }})"
         val factoryFun = FunSpec.builder("fuzzy${className}")
             .returns(classTypeName)
             .addParameters(parameterSpecs)
@@ -56,6 +60,7 @@ class FuzzyProcessor(
 
         val fileSpec = FileSpec.builder(packageName, "${className}FuzzyFactory")
             .addFunction(factoryFun)
+            .addImport("com.samanmiran.fuzz.util", "Random")
             .build()
 
         val output = codeGenerator.createNewFile(
