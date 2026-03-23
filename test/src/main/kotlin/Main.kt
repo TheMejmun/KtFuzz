@@ -31,8 +31,10 @@ data class TestClassD(
     val list: List<TestClassA>,
     val set: Set<String>,
     val map: Map<String, TestClassA>,
+    val mList: MutableList<TestClassA>,
+    val mSet: MutableSet<String>,
+    val mMap: MutableMap<String, TestClassA>,
 )
-
 
 fun main() {
     val testClass1 = TestClassA(true, false)

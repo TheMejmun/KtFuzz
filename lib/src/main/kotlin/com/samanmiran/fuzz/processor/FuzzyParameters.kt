@@ -21,6 +21,9 @@ import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.LONG
 import com.squareup.kotlinpoet.MAP
+import com.squareup.kotlinpoet.MUTABLE_LIST
+import com.squareup.kotlinpoet.MUTABLE_MAP
+import com.squareup.kotlinpoet.MUTABLE_SET
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.SET
 import com.squareup.kotlinpoet.SHORT
@@ -38,6 +41,44 @@ import kotlin.random.nextInt
 
 val FUZZY_ANNOTATION = ClassName("com.samanmiran.fuzz.annotation", "Fuzzy")
 
+// TODO:
+//  ANY
+//  ARRAY
+//  UNIT
+//  CHAR_SEQUENCE
+//  COMPARABLE
+//  THROWABLE
+//  ANNOTATION
+//  NUMBER
+//  NOTHING
+//  ITERABLE
+//  COLLECTION
+//  MAP_ENTRY
+//  MUTABLE_ITERABLE
+//  MUTABLE_COLLECTION
+//  MUTABLE_LIST
+//  MUTABLE_SET
+//  MUTABLE_MAP
+//  MUTABLE_MAP_ENTRY
+//  BOOLEAN_ARRAY
+//  BYTE_ARRAY
+//  CHAR_ARRAY
+//  SHORT_ARRAY
+//  INT_ARRAY
+//  LONG_ARRAY
+//  FLOAT_ARRAY
+//  DOUBLE_ARRAY
+//  ENUM
+//  U_BYTE
+//  U_SHORT
+//  U_INT
+//  U_LONG
+//  U_BYTE_ARRAY
+//  U_SHORT_ARRAY
+//  U_INT_ARRAY
+//  U_LONG_ARRAY
+
+
 fun isFuzzy(classDeclaration: KSClassDeclaration): Boolean {
     val annotations = classDeclaration.annotations
     val annotationClasses = annotations.map { it.annotationType.resolve().toClassName() }
@@ -52,36 +93,51 @@ fun isList(classDeclaration: KSClassDeclaration): Boolean {
     return classDeclaration.toClassName() == LIST
 }
 
-fun listCodeBlock(arguments: List<KSTypeArgument>): CodeBlock {
+fun isMutableList(classDeclaration: KSClassDeclaration): Boolean {
+    return classDeclaration.toClassName() == MUTABLE_LIST
+}
+
+fun listCodeBlock(arguments: List<KSTypeArgument>, mutable: Boolean): CodeBlock {
+    val mutableString = if (mutable) "Mutable" else ""
     val elementType = arguments[0].type
     assert(elementType != null, { "Could not detect list elements" })
     val elementCodeBlock = getFuzzyDefault(elementType!!)
-    return CodeBlock.of("List(Random.itemCount()) { $elementCodeBlock }")
+    return CodeBlock.of("${mutableString}List(Random.itemCount()) { $elementCodeBlock }")
 }
 
 fun isSet(classDeclaration: KSClassDeclaration): Boolean {
     return classDeclaration.toClassName() == SET
 }
 
-fun setCodeBlock(arguments: List<KSTypeArgument>): CodeBlock {
+fun isMutableSet(classDeclaration: KSClassDeclaration): Boolean {
+    return classDeclaration.toClassName() == MUTABLE_SET
+}
+
+fun setCodeBlock(arguments: List<KSTypeArgument>, mutable: Boolean): CodeBlock {
+    val mutableString = if (mutable) "Mutable" else ""
     val elementType = arguments[0].type
     assert(elementType != null, { "Could not detect set elements" })
     val elementCodeBlock = getFuzzyDefault(elementType!!)
-    return CodeBlock.of("List(Random.itemCount()) { $elementCodeBlock }.toSet()")
+    return CodeBlock.of("List(Random.itemCount()) { $elementCodeBlock }.to${mutableString}Set()")
 }
 
 fun isMap(classDeclaration: KSClassDeclaration): Boolean {
     return classDeclaration.toClassName() == MAP
 }
 
-fun mapCodeBlock(arguments: List<KSTypeArgument>): CodeBlock {
+fun isMutableMap(classDeclaration: KSClassDeclaration): Boolean {
+    return classDeclaration.toClassName() == MUTABLE_MAP
+}
+
+fun mapCodeBlock(arguments: List<KSTypeArgument>, mutable: Boolean): CodeBlock {
+    val mutableString = if (mutable) ".toMutableMap()" else ""
     val keyType = arguments[0].type
     val valType = arguments[1].type
     assert(keyType != null, { "Could not detect map key type" })
     assert(valType != null, { "Could not detect map value type" })
     val keyCodeBlock = getFuzzyDefault(keyType!!)
     val valCodeBlock = getFuzzyDefault(valType!!)
-    return CodeBlock.of("List(Random.itemCount()) { $keyCodeBlock to $valCodeBlock }.toMap()")
+    return CodeBlock.of("List(Random.itemCount()) { $keyCodeBlock to $valCodeBlock }.toMap()${mutableString}")
 }
 
 fun getFuzzyDefault(type: KSTypeReference): CodeBlock {
@@ -93,16 +149,16 @@ fun getFuzzyDefault(type: KSTypeReference): CodeBlock {
         return fuzzyCodeBlock(classDeclaration)
     }
 
-    if (isList(classDeclaration)) {
-        return listCodeBlock(arguments)
+    if (isList(classDeclaration) || isMutableList(classDeclaration)) {
+        return listCodeBlock(arguments, isMutableList(classDeclaration))
     }
 
-    if (isSet(classDeclaration)) {
-        return setCodeBlock(arguments)
+    if (isSet(classDeclaration) || isMutableSet(classDeclaration)) {
+        return setCodeBlock(arguments, isMutableSet(classDeclaration))
     }
 
-    if (isMap(classDeclaration)) {
-        return mapCodeBlock(arguments)
+    if (isMap(classDeclaration) || isMutableMap(classDeclaration)) {
+        return mapCodeBlock(arguments, isMutableMap(classDeclaration))
     }
 
     when (classDeclaration.toClassName()) {
