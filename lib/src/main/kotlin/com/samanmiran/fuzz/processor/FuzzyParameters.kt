@@ -30,7 +30,7 @@ fun isFuzzy(classDeclaration: KSClassDeclaration): Boolean {
     return annotationClasses.contains(FUZZY_ANNOTATION)
 }
 
-fun getFuzzyDefault(type: KSTypeReference): CodeBlock? {
+fun getFuzzyDefault(type: KSTypeReference): CodeBlock {
     val classDeclaration = type.resolve().declaration.closestClassDeclaration()
     assert(classDeclaration != null, { "Could not find class declaration for $type" })
 
@@ -41,6 +41,7 @@ fun getFuzzyDefault(type: KSTypeReference): CodeBlock? {
             BOOLEAN -> return CodeBlock.of("Random.boolean()")
         }
     }
-    return null
 
+    // TODO maybe allow parameters without defaults
+    throw RuntimeException("No default fuzzer found for ${type.toTypeName()}")
 }
