@@ -5,6 +5,8 @@ import kotlin.random.nextUInt
 import kotlin.random.nextULong
 
 object Random {
+    fun itemCount(): Int = Random.nextInt(8)
+
     fun boolean(): Boolean = Random.nextBoolean()
 
     fun byte(): Byte = Random.nextInt().toByte()

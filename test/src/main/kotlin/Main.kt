@@ -24,6 +24,7 @@ data class TestClassC(
     val float: Float,
     val double: Double,
     val string: String,
+    val list: List<TestClassA>,
 )
 
 fun main() {

@@ -1,10 +1,12 @@
 package com.samanmiran.fuzz.processor
 
 import com.google.devtools.ksp.closestClassDeclaration
+import com.google.devtools.ksp.innerArguments
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSTypeArgument
 import com.google.devtools.ksp.symbol.KSTypeReference
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.BYTE
@@ -16,16 +18,21 @@ import com.squareup.kotlinpoet.FLOAT
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.LONG
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.SHORT
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.jvm.jvmSuppressWildcards
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
+import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
 import com.squareup.kotlinpoet.typeNameOf
 import com.sun.tools.javac.tree.TreeInfo.types
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 val PACKAGE_NAME = "com.samanmiran.fuzz"
 val DEFAULTS_CLASS_NAME = "Defaults"
@@ -38,24 +45,51 @@ fun isFuzzy(classDeclaration: KSClassDeclaration): Boolean {
     return annotationClasses.contains(FUZZY_ANNOTATION)
 }
 
+fun fuzzyCodeBlock(classDeclaration: KSClassDeclaration): CodeBlock {
+    return CodeBlock.of("fuzzy${classDeclaration.simpleName.asString()}()")
+}
+
+fun isList(classDeclaration: KSClassDeclaration): Boolean {
+    return classDeclaration.toClassName() == LIST
+}
+
+fun listCodeBlock(arguments: List<KSTypeArgument>): CodeBlock {
+    val elementType = arguments.last().type
+    assert(elementType != null, { "Could not detect list elements" })
+    val elementCodeBlock = getFuzzyDefault(elementType!!)
+    return CodeBlock.of("List(Random.itemCount()) { $elementCodeBlock }")
+}
+//fun isSet(classDeclaration: KSClassDeclaration): Boolean {
+//
+//}
+//
+//fun isMap(classDeclaration: KSClassDeclaration): Boolean {
+//
+//}
+
 fun getFuzzyDefault(type: KSTypeReference): CodeBlock {
     val classDeclaration = type.resolve().declaration.closestClassDeclaration()
+    val arguments = type.resolve().arguments
     assert(classDeclaration != null, { "Could not find class declaration for $type" })
 
     if (isFuzzy(classDeclaration!!)) {
-        return CodeBlock.of("fuzzy${classDeclaration.simpleName.asString()}()")
-    } else {
-        when(classDeclaration.toClassName()){
-            BOOLEAN -> return CodeBlock.of("Random.boolean()")
-            BYTE -> return CodeBlock.of("Random.byte()")
-            SHORT -> return CodeBlock.of("Random.short()")
-            INT -> return CodeBlock.of("Random.int()")
-            LONG -> return CodeBlock.of("Random.long()")
-            CHAR -> return CodeBlock.of("Random.char()")
-            FLOAT -> return CodeBlock.of("Random.float()")
-            DOUBLE -> return CodeBlock.of("Random.double()")
-            STRING -> return CodeBlock.of("Random.string()")
-        }
+        return fuzzyCodeBlock(classDeclaration)
+    }
+
+    if (isList(classDeclaration)) {
+        return listCodeBlock(arguments)
+    }
+
+    when (classDeclaration.toClassName()) {
+        BOOLEAN -> return CodeBlock.of("Random.boolean()")
+        BYTE -> return CodeBlock.of("Random.byte()")
+        SHORT -> return CodeBlock.of("Random.short()")
+        INT -> return CodeBlock.of("Random.int()")
+        LONG -> return CodeBlock.of("Random.long()")
+        CHAR -> return CodeBlock.of("Random.char()")
+        FLOAT -> return CodeBlock.of("Random.float()")
+        DOUBLE -> return CodeBlock.of("Random.double()")
+        STRING -> return CodeBlock.of("Random.string()")
     }
 
     // TODO maybe allow parameters without defaults
