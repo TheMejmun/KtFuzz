@@ -24,8 +24,15 @@ data class TestClassC(
     val float: Float,
     val double: Double,
     val string: String,
-    val list: List<TestClassA>,
 )
+
+@Fuzzy
+data class TestClassD(
+    val list: List<TestClassA>,
+    val set: Set<String>,
+    val map: Map<String, TestClassA>,
+)
+
 
 fun main() {
     val testClass1 = TestClassA(true, false)
@@ -36,4 +43,5 @@ fun main() {
     println(testClass3)
     println(fuzzyTestClassB())
     println(fuzzyTestClassC())
+    println(fuzzyTestClassD())
 }

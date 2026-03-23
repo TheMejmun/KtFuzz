@@ -20,7 +20,9 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.LONG
+import com.squareup.kotlinpoet.MAP
 import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.SET
 import com.squareup.kotlinpoet.SHORT
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeName
@@ -54,18 +56,36 @@ fun isList(classDeclaration: KSClassDeclaration): Boolean {
 }
 
 fun listCodeBlock(arguments: List<KSTypeArgument>): CodeBlock {
-    val elementType = arguments.last().type
+    val elementType = arguments[0].type
     assert(elementType != null, { "Could not detect list elements" })
     val elementCodeBlock = getFuzzyDefault(elementType!!)
     return CodeBlock.of("List(Random.itemCount()) { $elementCodeBlock }")
 }
-//fun isSet(classDeclaration: KSClassDeclaration): Boolean {
-//
-//}
-//
-//fun isMap(classDeclaration: KSClassDeclaration): Boolean {
-//
-//}
+
+fun isSet(classDeclaration: KSClassDeclaration): Boolean {
+    return classDeclaration.toClassName() == SET
+}
+
+fun setCodeBlock(arguments: List<KSTypeArgument>): CodeBlock {
+    val elementType = arguments[0].type
+    assert(elementType != null, { "Could not detect set elements" })
+    val elementCodeBlock = getFuzzyDefault(elementType!!)
+    return CodeBlock.of("List(Random.itemCount()) { $elementCodeBlock }.toSet()")
+}
+
+fun isMap(classDeclaration: KSClassDeclaration): Boolean {
+    return classDeclaration.toClassName() == MAP
+}
+
+fun mapCodeBlock(arguments: List<KSTypeArgument>): CodeBlock {
+    val keyType = arguments[0].type
+    val valType = arguments[1].type
+    assert(keyType != null, { "Could not detect map key type" })
+    assert(valType != null, { "Could not detect map value type" })
+    val keyCodeBlock = getFuzzyDefault(keyType!!)
+    val valCodeBlock = getFuzzyDefault(valType!!)
+    return CodeBlock.of("List(Random.itemCount()) { $keyCodeBlock to $valCodeBlock }.toMap()")
+}
 
 fun getFuzzyDefault(type: KSTypeReference): CodeBlock {
     val classDeclaration = type.resolve().declaration.closestClassDeclaration()
@@ -78,6 +98,14 @@ fun getFuzzyDefault(type: KSTypeReference): CodeBlock {
 
     if (isList(classDeclaration)) {
         return listCodeBlock(arguments)
+    }
+
+    if (isSet(classDeclaration)) {
+        return setCodeBlock(arguments)
+    }
+
+    if (isMap(classDeclaration)) {
+        return mapCodeBlock(arguments)
     }
 
     when (classDeclaration.toClassName()) {
