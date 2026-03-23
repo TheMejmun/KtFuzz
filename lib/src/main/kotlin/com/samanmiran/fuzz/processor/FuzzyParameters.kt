@@ -36,9 +36,6 @@ import com.sun.tools.javac.tree.TreeInfo.types
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-val PACKAGE_NAME = "com.samanmiran.fuzz"
-val DEFAULTS_CLASS_NAME = "Defaults"
-
 val FUZZY_ANNOTATION = ClassName("com.samanmiran.fuzz.annotation", "Fuzzy")
 
 fun isFuzzy(classDeclaration: KSClassDeclaration): Boolean {
